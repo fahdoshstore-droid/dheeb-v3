@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🐺 DHEEB Trading System V3</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-dark: #0a0e1a;
+      --bg-card: #111827;
+      --bg-card2: #1a2235;
+      --accent-green: #00ff88;
+      --accent-red: #ff4757;
+      --accent-yellow: #ffd32a;
+      --accent-blue: #3498db;
+      --text-primary: #e2e8f0;
+      --text-secondary: #94a3b8;
+      --border: #1e293b;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      background: linear-gradient(135deg, #0d1b2a 0%, #1a2a4a 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      font-size: 32px;
+      filter: drop-shadow(0 0 12px rgba(0,255,136,0.5));
+    }
+
+    .logo-text h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent-green);
+      letter-spacing: 2px;
+    }
+
+    .logo-text p {
+      font-size: 11px;
+      color: var(--text-secondary);
+      letter-spacing: 1px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0,255,136,0.1);
+      border: 1px solid rgba(0,255,136,0.3);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      color: var(--accent-green);
+      font-weight: 600;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent-green);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.3); }
+    }
+
+    .time-display {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-family: monospace;
+    }
+
+    /* ─── MAIN LAYOUT ─── */
+    .main {
+      padding: 24px 32px;
+      display: grid;
+      gap: 20px;
+    }
+
+    /* ─── STATS ROW ─── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s;
+    }
+
+    .stat-card:hover { transform: translateY(-2px); }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+
+    .stat-card.green::before { background: var(--accent-green); }
+    .stat-card.red::before { background: var(--accent-red); }
+    .stat-card.blue::before { background: var(--accent-blue); }
+    .stat-card.yellow::before { background: var(--accent-yellow); }
+    .stat-card.purple::before { background: #9b59b6; }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .stat-value.green { color: var(--accent-green); }
+    .stat-value.red { color: var(--accent-red); }
+    .stat-value.blue { color: var(--accent-blue); }
+    .stat-value.yellow { color: var(--accent-yellow); }
+
+    .stat-sub {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    /* ─── CONTENT GRID ─── */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ─── AGENTS STATUS ─── */
+    .agents-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .agent-item {
+      background: var(--bg-card2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .agent-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .agent-icon { font-size: 18px; }
+
+    .agent-name {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .agent-port {
+      font-size: 10px;
+      color: var(--text-secondary);
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .status-dot.online { background: var(--accent-green); box-shadow: 0 0 6px var(--accent-green); }
+    .status-dot.offline { background: var(--accent-red); }
+
+    /* ─── TRADES TABLE ─── */
+    .trades-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .trades-table th {
+      text-align: right;
+      padding: 10px 12px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .trades-table td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(30,41,59,0.5);
+    }
+
+    .trades-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .trade-direction {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .trade-direction.buy {
+      background: rgba(0,255,136,0.15);
+      color: var(--accent-green);
+      border: 1px solid rgba(0,255,136,0.3);
+    }
+
+    .trade-direction.sell {
+      background: rgba(255,71,87,0.15);
+      color: var(--accent-red);
+      border: 1px solid rgba(255,71,87,0.3);
+    }
+
+    .result-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .result-badge.win {
+      background: rgba(0,255,136,0.15);
+      color: var(--accent-green);
+    }
+
+    .result-badge.loss {
+      background: rgba(255,71,87,0.15);
+      color: var(--accent-red);
+    }
+
+    .result-badge.open {
+      background: rgba(52,152,219,0.15);
+      color: var(--accent-blue);
+    }
+
+    /* ─── FILTER PANEL ─── */
+    .filter-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .filter-gate {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(30,41,59,0.5);
+    }
+
+    .filter-gate:last-child { border-bottom: none; }
+
+    .gate-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .gate-icon { font-size: 16px; }
+
+    .gate-status {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 4px;
+    }
+
+    .gate-status.pass {
+      background: rgba(0,255,136,0.15);
+      color: var(--accent-green);
+    }
+
+    .gate-status.fail {
+      background: rgba(255,71,87,0.15);
+      color: var(--accent-red);
+    }
+
+    .gate-status.warn {
+      background: rgba(255,211,42,0.15);
+      color: var(--accent-yellow);
+    }
+
+    /* ─── BOTTOM GRID ─── */
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+    }
+
+    /* ─── CONFLUENCE SCORE ─── */
+    .confluence-score {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .score-circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 4px solid var(--accent-green);
+      box-shadow: 0 0 20px rgba(0,255,136,0.2);
+      margin-bottom: 16px;
+    }
+
+    .score-number {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--accent-green);
+    }
+
+    .score-max {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .confluence-items {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .confluence-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+    }
+
+    .confluence-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      flex: 1;
+      margin: 0 10px;
+      overflow: hidden;
+    }
+
+    .confluence-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--accent-green);
+      transition: width 0.5s ease;
+    }
+
+    /* ─── KILL ZONE TIMER ─── */
+    .killzone-display {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .killzone-name {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent-green);
+      margin-bottom: 8px;
+    }
+
+    .killzone-time {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    .killzone-sessions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .session-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: var(--bg-card2);
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    .session-row.active {
+      border: 1px solid rgba(0,255,136,0.3);
+      background: rgba(0,255,136,0.05);
+    }
+
+    /* ─── DISCLAIMER ─── */
+    .disclaimer {
+      background: rgba(255,71,87,0.05);
+      border: 1px solid rgba(255,71,87,0.2);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 1200px) {
+      .stats-row { grid-template-columns: repeat(3, 1fr); }
+      .content-grid { grid-template-columns: 1fr; }
+      .bottom-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .main { padding: 16px; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .bottom-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── HEADER ─── -->
+<header>
+  <div class="logo">
+    <span class="logo-icon">🐺</span>
+    <div class="logo-text">
+      <h1>DHEEB TRADING SYSTEM</h1>
+      <p>ICT / SMC / MMXM — V3.0 PRODUCTION</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      LIVE
+    </div>
+    <div class="time-display" id="clock">--:--:-- AST</div>
+  </div>
+</header>
+
+<!-- ─── MAIN CONTENT ─── -->
+<div class="main">
+
+  <!-- ─── STATS ROW ─── -->
+  <div class="stats-row">
+    <div class="stat-card green">
+      <div class="stat-label">رصيد الحساب</div>
+      <div class="stat-value green" id="balance">$50,000</div>
+      <div class="stat-sub">+$1,250 هذا الأسبوع</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">Win Rate</div>
+      <div class="stat-value green" id="winrate">67.3%</div>
+      <div class="stat-sub">41 / 61 صفقة</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-label">Profit Factor</div>
+      <div class="stat-value blue" id="pf">1.82</div>
+      <div class="stat-sub">الهدف: ≥ 1.5</div>
+    </div>
+    <div class="stat-card yellow">
+      <div class="stat-label">Max Drawdown</div>
+      <div class="stat-value yellow" id="dd">-4.2%</div>
+      <div class="stat-sub">الحد الأقصى: 10%</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-label">صفقات اليوم</div>
+      <div class="stat-value" id="daily-trades" style="color:#ffd32a">1 / 2</div>
+      <div class="stat-sub">خسارة اليوم: $0</div>
+    </div>
+  </div>
+
+  <!-- ─── CONTENT GRID ─── -->
+  <div class="content-grid">
+
+    <!-- Equity Curve Chart -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📈 منحنى الأسهم (Equity Curve)</div>
+        <div style="font-size:12px;color:var(--text-secondary)">آخر 30 يوم</div>
+      </div>
+      <canvas id="equityChart" height="200"></canvas>
+    </div>
+
+    <!-- Agents Status -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🤖 حالة الوكلاء</div>
+        <div style="font-size:11px;color:var(--accent-green)">5 / 5 نشط</div>
+      </div>
+      <div class="agents-grid">
+        <div class="agent-item">
+          <div class="agent-info">
+            <span class="agent-icon">📊</span>
+            <div>
+              <div class="agent-name">Trading Agent</div>
+              <div class="agent-port">Port 8080</div>
+            </div>
+          </div>
+          <div class="status-dot online"></div>
+        </div>
+        <div class="agent-item">
+          <div class="agent-info">
+            <span class="agent-icon">💼</span>
+            <div>
+              <div class="agent-name">Risk Agent</div>
+              <div class="agent-port">Port 8081</div>
+            </div>
+          </div>
+          <div class="status-dot online"></div>
+        </div>
+        <div class="agent-item">
+          <div class="agent-info">
+            <span class="agent-icon">📰</span>
+            <div>
+              <div class="agent-name">News Agent</div>
+              <div class="agent-port">Port 8082</div>
+            </div>
+          </div>
+          <div class="status-dot online"></div>
+        </div>
+        <div class="agent-item">
+          <div class="agent-info">
+            <span class="agent-icon">🐦</span>
+            <div>
+              <div class="agent-name">Sentiment Agent</div>
+              <div class="agent-port">Port 8083</div>
+            </div>
+          </div>
+          <div class="status-dot online"></div>
+        </div>
+        <div class="agent-item" style="grid-column: span 2;">
+          <div class="agent-info">
+            <span class="agent-icon">📱</span>
+            <div>
+              <div class="agent-name">Notifier Agent</div>
+              <div class="agent-port">Port 8084 — Telegram + WhatsApp</div>
+            </div>
+          </div>
+          <div class="status-dot online"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── TRADES + FILTER ─── -->
+  <div class="content-grid">
+
+    <!-- Recent Trades -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📋 آخر الصفقات</div>
+        <div style="font-size:11px;color:var(--text-secondary)">آخر 10 صفقات</div>
+      </div>
+      <table class="trades-table">
+        <thead>
+          <tr>
+            <th>الوقت</th>
+            <th>الزوج</th>
+            <th>الاتجاه</th>
+            <th>الدخول</th>
+            <th>الهدف</th>
+            <th>الوقف</th>
+            <th>RRR</th>
+            <th>النتيجة</th>
+          </tr>
+        </thead>
+        <tbody id="tradesBody">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- DHEEB Filter Status -->
+    <div class="filter-panel">
+      <div class="card-header">
+        <div class="card-title">🔍 DHEEB Filter V3</div>
+        <div style="font-size:11px;color:var(--accent-green)">ML-Powered</div>
+      </div>
+      <div id="filterGates">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── BOTTOM GRID ─── -->
+  <div class="bottom-grid">
+
+    <!-- Confluence Score -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">⚡ Confluence Score</div>
+      </div>
+      <div class="confluence-score">
+        <div class="score-circle">
+          <div class="score-number" id="confluenceScore">4</div>
+          <div class="score-max">/ 5</div>
+        </div>
+        <div class="confluence-items">
+          <div class="confluence-item">
+            <span>CHOCH</span>
+            <div class="confluence-bar"><div class="confluence-fill" style="width:100%"></div></div>
+            <span style="color:var(--accent-green)">✓</span>
+          </div>
+          <div class="confluence-item">
+            <span>Order Block</span>
+            <div class="confluence-bar"><div class="confluence-fill" style="width:100%"></div></div>
+            <span style="color:var(--accent-green)">✓</span>
+          </div>
+          <div class="confluence-item">
+            <span>Liquidity Sweep</span>
+            <div class="confluence-bar"><div class="confluence-fill" style="width:100%"></div></div>
+            <span style="color:var(--accent-green)">✓</span>
+          </div>
+          <div class="confluence-item">
+            <span>FVG</span>
+            <div class="confluence-bar"><div class="confluence-fill" style="width:100%"></div></div>
+            <span style="color:var(--accent-green)">✓</span>
+          </div>
+          <div class="confluence-item">
+            <span>Kill Zone</span>
+            <div class="confluence-bar"><div class="confluence-fill" style="width:60%"></div></div>
+            <span style="color:var(--accent-yellow)">~</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kill Zone Timer -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">⏰ Kill Zones</div>
+      </div>
+      <div class="killzone-display">
+        <div class="killzone-name" id="currentZone">LONDON OPEN</div>
+        <div class="killzone-time" id="zoneTime">07:00 – 10:00 UTC</div>
+        <div class="killzone-sessions">
+          <div class="session-row active">
+            <span>🇬🇧 London</span>
+            <span>07:00 – 10:00 UTC</span>
+            <span style="color:var(--accent-green);font-size:11px;">ACTIVE</span>
+          </div>
+          <div class="session-row">
+            <span>🇺🇸 NY Open</span>
+            <span>13:00 – 16:00 UTC</span>
+            <span style="color:var(--text-secondary);font-size:11px;">WAITING</span>
+          </div>
+          <div class="session-row">
+            <span>🇺🇸 NY PM</span>
+            <span>18:00 – 20:00 UTC</span>
+            <span style="color:var(--text-secondary);font-size:11px;">WAITING</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sentiment -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🐦 Sentiment Analysis</div>
+        <div style="font-size:11px;color:var(--text-secondary)">FinBERT NLP</div>
+      </div>
+      <div style="padding: 10px 0;">
+        <div style="text-align:center;margin-bottom:16px;">
+          <div style="font-size:28px;font-weight:800;color:var(--accent-green)">BULLISH</div>
+          <div style="font-size:12px;color:var(--text-secondary)">ثقة: 74%</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;">
+          <div style="display:flex;justify-content:space-between;padding:8px;background:var(--bg-card2);border-radius:6px;">
+            <span>@Liq_Sniper</span>
+            <span style="color:var(--accent-green)">Bullish 🟢</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px;background:var(--bg-card2);border-radius:6px;">
+            <span>@TraderDiegoX</span>
+            <span style="color:var(--accent-green)">Bullish 🟢</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px;background:var(--bg-card2);border-radius:6px;">
+            <span>@FAHIRES</span>
+            <span style="color:var(--accent-yellow)">Neutral 🟡</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Disclaimer -->
+  <div class="disclaimer">
+    ⚠️ تنويه: التداول في الأسواق المالية ينطوي على مخاطر عالية. نظام DHEEB هو أداة مساعدة للتحليل فقط وليس نصيحة مالية.
+    يُنصح باختبار أي استراتيجية على حساب تجريبي (Demo) قبل التطبيق الفعلي. | DHEEB V3 © 2026 @FAHIRES
+  </div>
+
+</div>
+
+<script>
+// ─── CLOCK ───
+function updateClock() {
+  const now = new Date();
+  const ast = new Date(now.getTime() + (3 * 60 * 60 * 1000));
+  const h = String(ast.getUTCHours()).padStart(2, '0');
+  const m = String(ast.getUTCMinutes()).padStart(2, '0');
+  const s = String(ast.getUTCSeconds()).padStart(2, '0');
+  document.getElementById('clock').textContent = `${h}:${m}:${s} AST`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ─── EQUITY CHART ───
+const ctx = document.getElementById('equityChart').getContext('2d');
+
+// Simulated equity curve data
+const labels = [];
+const data = [];
+let val = 50000;
+for (let i = 30; i >= 0; i--) {
+  const d = new Date();
+  d.setDate(d.getDate() - i);
+  labels.push(d.toLocaleDateString('ar-SA', { month: 'short', day: 'numeric' }));
+  val += (Math.random() - 0.35) * 400;
+  data.push(parseFloat(val.toFixed(2)));
+}
+
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [{
+      label: 'Equity ($)',
+      data,
+      borderColor: '#00ff88',
+      backgroundColor: 'rgba(0,255,136,0.05)',
+      borderWidth: 2,
+      pointRadius: 0,
+      tension: 0.4,
+      fill: true
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1a2235',
+        borderColor: '#00ff88',
+        borderWidth: 1,
+        titleColor: '#e2e8f0',
+        bodyColor: '#00ff88',
+        callbacks: {
+          label: ctx => `$${ctx.raw.toLocaleString()}`
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: { color: 'rgba(30,41,59,0.5)' },
+        ticks: { color: '#94a3b8', font: { size: 10 } }
+      },
+      y: {
+        grid: { color: 'rgba(30,41,59,0.5)' },
+        ticks: {
+          color: '#94a3b8',
+          font: { size: 10 },
+          callback: v => '$' + v.toLocaleString()
+        }
+      }
+    }
+  }
+});
+
+// ─── TRADES TABLE ───
+const trades = [
+  { time: '09:15', pair: 'NQ', dir: 'BUY', entry: '17,480', tp: '17,540', sl: '17,456', rrr: '1:2.5', result: 'WIN', pnl: '+$500' },
+  { time: '14:22', pair: 'MNQ', dir: 'SELL', entry: '17,530', tp: '17,460', sl: '17,558', rrr: '1:2.5', result: 'WIN', pnl: '+$350' },
+  { time: '15:45', pair: 'NQ', dir: 'BUY', entry: '17,490', tp: '17,565', sl: '17,460', rrr: '1:2.5', result: 'LOSS', pnl: '-$500' },
+  { time: '09:05', pair: 'NQ', dir: 'BUY', entry: '17,420', tp: '17,495', sl: '17,390', rrr: '1:2.5', result: 'WIN', pnl: '+$500' },
+  { time: '13:50', pair: 'MNQ', dir: 'SELL', entry: '17,510', tp: '17,435', sl: '17,540', rrr: '1:2.5', result: 'OPEN', pnl: '--' },
+];
+
+const tbody = document.getElementById('tradesBody');
+trades.forEach(t => {
+  const row = document.createElement('tr');
+  const dirClass = t.dir === 'BUY' ? 'buy' : 'sell';
+  const resultClass = t.result === 'WIN' ? 'win' : t.result === 'LOSS' ? 'loss' : 'open';
+  const pnlColor = t.pnl.startsWith('+') ? 'var(--accent-green)' : t.pnl === '--' ? 'var(--accent-blue)' : 'var(--accent-red)';
+  row.innerHTML = `
+    <td style="color:var(--text-secondary)">${t.time}</td>
+    <td style="font-weight:600">${t.pair}</td>
+    <td><span class="trade-direction ${dirClass}">${t.dir}</span></td>
+    <td>${t.entry}</td>
+    <td style="color:var(--accent-green)">${t.tp}</td>
+    <td style="color:var(--accent-red)">${t.sl}</td>
+    <td style="color:var(--accent-yellow)">${t.rrr}</td>
+    <td><span class="result-badge ${resultClass}">${t.result}</span></td>
+  `;
+  tbody.appendChild(row);
+});
+
+// ─── FILTER GATES ───
+const gates = [
+  { icon: '⏰', label: 'Kill Zone', status: 'PASS', cls: 'pass' },
+  { icon: '📅', label: 'Day Filter (No Wed/Fri)', status: 'PASS', cls: 'pass' },
+  { icon: '📰', label: 'News Blackout', status: 'CLEAR', cls: 'pass' },
+  { icon: '🧠', label: 'Psychology Gate', status: 'PASS', cls: 'pass' },
+  { icon: '📊', label: 'HTF Bias Aligned', status: 'PASS', cls: 'pass' },
+  { icon: '💧', label: 'Liquidity Sweep', status: 'PASS', cls: 'pass' },
+  { icon: '📦', label: 'Order Block', status: 'PASS', cls: 'pass' },
+  { icon: '🔲', label: 'FVG Present', status: 'PASS', cls: 'pass' },
+  { icon: '⚖️', label: 'RRR ≥ 1:2.5', status: 'PASS', cls: 'pass' },
+  { icon: '🤖', label: 'ML Score ≥ 65%', status: '72%', cls: 'pass' },
+];
+
+const filterContainer = document.getElementById('filterGates');
+gates.forEach(g => {
+  const div = document.createElement('div');
+  div.className = 'filter-gate';
+  div.innerHTML = `
+    <div class="gate-label">
+      <span class="gate-icon">${g.icon}</span>
+      <span>${g.label}</span>
+    </div>
+    <span class="gate-status ${g.cls}">${g.status}</span>
+  `;
+  filterContainer.appendChild(div);
+});
+</script>
+</body>
+</html>
